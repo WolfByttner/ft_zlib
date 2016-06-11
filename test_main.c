@@ -6,7 +6,7 @@
 /*   By: jbyttner <jbyttner@42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/06/09 11:45:31 by jbyttner          #+#    #+#             */
-/*   Updated: 2016/06/11 13:06:02 by jbyttner         ###   ########.fr       */
+/*   Updated: 2016/06/11 13:11:08 by jbyttner         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@
 #include "ft_zlib.h"
 #include <fcntl.h>
 #include <unistd.h>
+#include <stdio.h>
 
 int		main(int ac, char **av)
 {
@@ -45,5 +46,6 @@ int		main(int ac, char **av)
 		return (-1);
 	write(fd, strm.next_out, strm.total_read_out);
 	close(fd);
+	printf("I exited normally\n");
 	return (0);
 }
