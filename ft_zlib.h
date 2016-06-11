@@ -6,12 +6,20 @@
 /*   By: jbyttner <jbyttner@42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/06/01 19:02:50 by jbyttner          #+#    #+#             */
-/*   Updated: 2016/06/01 19:15:43 by jbyttner         ###   ########.fr       */
+/*   Updated: 2016/06/11 13:05:02 by jbyttner         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef FT_ZLIB_H
 # define FT_ZLIB_H
+
+/*
+** Defined constants
+*/
+
+# define FT_ZENO_INPUT 8
+# define FT_ZEBITS_REQ 2
+# define FT_ZENOMEM 1
 
 /*
 ** Stream architecture
@@ -20,6 +28,7 @@
 typedef unsigned char	t_byte;
 typedef unsigned int	t_uint;
 typedef unsigned long	t_ulong;
+typedef unsigned char	t_uchar;
 
 typedef struct			s_zstream
 {
@@ -30,9 +39,13 @@ typedef struct			s_zstream
 	t_uint				available_out;
 	t_ulong				total_read_out;
 	int					data_type;
-}						t_zstream;
+	unsigned char		settings;
+	int					errno;
+	t_ulong				bitbuff;
+	t_uint				bitcnt;
+}					t_zstream;
 
-typedef t_zstream		*t_streamp;
+typedef t_zstream		*t_zstreamp;
 
 /*
 ** Core functions
