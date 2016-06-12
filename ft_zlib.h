@@ -6,7 +6,7 @@
 /*   By: jbyttner <jbyttner@42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/06/01 19:02:50 by jbyttner          #+#    #+#             */
-/*   Updated: 2016/06/11 13:05:02 by jbyttner         ###   ########.fr       */
+/*   Updated: 2016/06/12 01:09:04 by jbyttner         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,7 @@ typedef struct			s_zstream
 	const t_byte		*next_in;
 	t_uint				available_in;
 	t_ulong				total_read_in;
-	const t_byte		*next_out;
+	t_byte		*next_out;
 	t_uint				available_out;
 	t_ulong				total_read_out;
 	int					data_type;
