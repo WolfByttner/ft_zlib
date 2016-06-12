@@ -6,7 +6,7 @@
 /*   By: jbyttner <jbyttner@42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/06/09 09:46:35 by jbyttner          #+#    #+#             */
-/*   Updated: 2016/06/12 01:09:19 by jbyttner         ###   ########.fr       */
+/*   Updated: 2016/06/12 01:16:47 by jbyttner         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,6 +59,15 @@ static inline int	strm_fill_bitbuff(t_zstream *strm)
 
 /*
 ** Allows [number of bits in long] - 1 bits
+**
+** This function gets [num] bits from the input stream
+** and returns them with the last read bit as the least significant bit.
+** All bits higher than [num] are zeroed.
+**
+** For example, if the input stream reads .. 0101.... ....1000 ..
+** the function will return '10100001' which is 'q' + 48 ['00110000' in the
+** static huffman]. The function reads bits right-to-left
+** and bytes left-to-right.
 */
 
 t_ulong				get_bits(t_uint num, t_zstream *strm)
