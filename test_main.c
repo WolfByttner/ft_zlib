@@ -6,7 +6,7 @@
 /*   By: jbyttner <jbyttner@42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/06/09 11:45:31 by jbyttner          #+#    #+#             */
-/*   Updated: 2016/06/11 17:01:24 by jbyttner         ###   ########.fr       */
+/*   Updated: 2016/06/22 20:12:48 by jbyttner         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,6 +42,7 @@ int		main(int ac, char **av)
 		return (-1);
 	strm.available_in = r;
 	strm.bitcnt = 0;
+	strm.bitbuff = 0;
 	ft_inflate(&strm, 0);
 	if ((fd = open("TESTOUT", O_TRUNC | O_WRONLY)) <= 0)
 		return (-1);

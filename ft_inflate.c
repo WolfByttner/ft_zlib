@@ -6,7 +6,7 @@
 /*   By: jbyttner <jbyttner@42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/06/11 12:59:23 by jbyttner          #+#    #+#             */
-/*   Updated: 2016/06/12 21:46:28 by jbyttner         ###   ########.fr       */
+/*   Updated: 2016/06/12 23:22:39 by jbyttner         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,7 +53,8 @@ static int	inflate_pair_static(t_zstreamp strm, t_ulong len)
 
 static int	inflate_literal_static(t_zstreamp strm, t_ulong bits, int nbits)
 {
-	(*(strm->next_out)) = (t_uchar)(bits - (nbits == 8 ? 48 : 400));
+	(*(strm->next_out++)) = (t_uchar)(bits - (nbits == 8 ? 48 : 400));
+	printf("%c", *(strm->next_out - 1));
 	strm->available_out--;
 	strm->total_read_out++;
 }
@@ -68,14 +69,21 @@ static int	ft_inflate_static(t_zstreamp strm, int level)
 	t_ulong		bits;
 
 	//TODO need to have buffered encoding here
+
 	while (strm->available_in > 0)
 	{
 		bits = get_bits(7, strm);
-		printf("These are the bits %lu\n", bits);
 		if (24 <= bits && bits <= 95)
 			inflate_literal_static(strm, (bits << 1) + get_bits(1,strm), 8);
-		else if (0 <= bits && bits <= 23)
+		else if (1 <= bits && bits <= 23)
 			inflate_pair_static(strm, bits);
+		else if (100 <= bits && bits <= 127)
+			inflate_literal_static(strm, (bits << 2) + get_bits(2, strm), 9);
+		else if (0 == bits)
+			return (0);
+		else
+			inflate_pair_static(strm, (bits << 1) + get_bits(1, strm));
+	printf(" <- %u literal\n", bits);
 	}
 }
 
