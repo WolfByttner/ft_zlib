@@ -6,7 +6,7 @@
 /*   By: jbyttner <jbyttner@42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/06/09 09:46:35 by jbyttner          #+#    #+#             */
-/*   Updated: 2016/06/22 20:45:14 by jbyttner         ###   ########.fr       */
+/*   Updated: 2016/06/23 23:34:46 by jbyttner         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,8 +53,6 @@ static inline int	strm_fill_bitbuff(t_zstream *strm)
 		strm->available_in--;
 	}
 	strm->next_in += i - 1;
-	printf("Buff is %lu|%lu|%p\n", strm->bitbuff,i , strm->next_in);
-	printf("ulong %lu\n", sizeof(t_ulong));
 	return (0);
 }
 
@@ -84,7 +82,6 @@ t_ulong				get_bits(t_uint num, t_zstream *strm)
 	{
 		if (num > strm->bitcnt)
 		{
-			printf("\n purging %u, is %lu\n", strm->bitcnt, strm->bitbuff);
 			storage = ((1L << strm->bitcnt) - 1) & (strm->bitbuff
 					>> (ULONG_BIT - strm->bitcnt)); 
 			num -= strm->bitcnt;
@@ -94,7 +91,6 @@ t_ulong				get_bits(t_uint num, t_zstream *strm)
 			if (strm_fill_bitbuff(strm) == -1 || num == 0)
 				return (storage);
 		}
-		printf("%lu buff is \n", strm->bitbuff);
 		storage += ((1L << num) - 1) & (strm->bitbuff >> (ULONG_BIT - num));
 		strm->bitbuff <<= num;
 		strm->bitcnt -= num;

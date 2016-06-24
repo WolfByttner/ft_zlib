@@ -6,11 +6,12 @@
 /*   By: jbyttner <jbyttner@42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/06/11 12:59:23 by jbyttner          #+#    #+#             */
-/*   Updated: 2016/06/12 23:22:39 by jbyttner         ###   ########.fr       */
+/*   Updated: 2016/06/24 23:26:46 by jbyttner         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_zlib_detail.h"
+#include <math.h>
 
 /*
 ** Naming scheme [algorithm]_["byte" type]_[huffman type]
@@ -21,6 +22,10 @@
 ** according to the fixed huffman tree described in
 ** Section 3.2.6 in RFC 1951 from the IETF
 ** http://tools.ietf.org/html/rfc1951#section-3.2.6
+** -
+** The encoding specifies values between 256 and 285, encoded
+** as 0b0000000 to 0b0011101 (plus 2 trailing bytes) in the stream.
+** For clarity, 29 is written as 285 - 256.
 */
 
 
@@ -31,16 +36,30 @@ static int	inflate_pair_static(t_zstreamp strm, t_ulong len)
 	const int	tabl[] = { 3, 11, 19, 35, 67, 131 };
 	const int	tabd[] = { 1, 5, 9, 17, 33, 65, 129, 257, 513, 1025, 2049, 4097, 8193, 16385 };
 
-	extra = (len == 285 ? (len > 264) * ((len - 261) / 4) : 0);
-	if (len != 285)
+	extra = (len == 285 - 256 ? 0 : (len > 8) * ((len - 5) / 4));
+	printf("%lu}%lu len extra\n", len, extra);
+	if (len != 285 - 256)
 		len = tabl[extra] + (extra ? get_bits(extra, strm) : 0)
-			+ (len > 264) * ((len - 261) / 4) * (len - tabl[extra]);
+			+ (len % 4) * extra + (len < 9 ? len - 1 : 0);
+			//(len > 264) * ((len - 261) / 4) * (len - tabl[extra]);
 	else
 		len = 258;
 	dst = get_bits(5, strm);
-	extra = (dst > 3) * ((extra - dst + 1) / 2);
+	extra = (dst > 3) * ((dst - 2) / 2);
 	dst = tabd[extra] + (extra ? get_bits(extra, strm) : 0)
-			+ (dst > 3) * ((dst - 2) / 2) * (dst - tabd[extra]);
+			+ (dst % 2) * (1 << extra) + (!extra) * (dst / 2) * 2;
+	printf("Length %lu - distance %lu\n", len, dst);
+	extra = 0;
+	while (extra < len && extra < strm->available_out)
+	{
+		strm->next_out[extra] = strm->next_out[-dst + (extra % dst)];
+		extra++;
+	}
+	if (extra < len)
+		; // TODO error here
+	strm->next_out += len;
+	strm->available_out -= len;
+	strm->total_read_out += len;
 	// TODO: Add lz77 retrieval based on len and dst
 } 
 
@@ -54,7 +73,7 @@ static int	inflate_pair_static(t_zstreamp strm, t_ulong len)
 static int	inflate_literal_static(t_zstreamp strm, t_ulong bits, int nbits)
 {
 	(*(strm->next_out++)) = (t_uchar)(bits - (nbits == 8 ? 48 : 400));
-	printf("%c", *(strm->next_out - 1));
+	printf("%c <-- is", *(strm->next_out - 1));
 	strm->available_out--;
 	strm->total_read_out++;
 }
