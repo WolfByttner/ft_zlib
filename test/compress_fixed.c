@@ -6,7 +6,7 @@
 /*   By: jbyttner <jbyttner@42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/06/05 01:36:54 by jbyttner          #+#    #+#             */
-/*   Updated: 2016/06/11 13:39:40 by jbyttner         ###   ########.fr       */
+/*   Updated: 2016/06/25 21:56:27 by jbyttner         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,8 +17,9 @@
 #include <strings.h>
 #include <string.h>
 #include <stdio.h>
+#include <errno.h>
 #define TMP_OUT "tmp.compressed"
-#define MAX_BUFF 1000
+#define MAX_BUFF 5000
 
 /*
 ** in_buff is null terminated. It is capped for testing purposes
@@ -31,8 +32,9 @@ int		deflate_stream(char *in_buff, int r)
 	char		out_buff[MAX_BUFF + 1];
 
 	bzero(out_buff, sizeof (out_buff));
-	if ((fd2 = open(TMP_OUT, O_TRUNC | O_WRONLY | O_CREAT)) <= 0)
+	if ((fd2 = open(TMP_OUT, O_TRUNC | O_WRONLY | O_CREAT, 0666)) <= 0)
 		return (-1);
+	printf("Compressing\n");
 	strm.zalloc = Z_NULL;
 	strm.zfree = Z_NULL;
 	strm.opaque = Z_NULL;
@@ -62,6 +64,7 @@ int		main(int ac, char **av)
 	printf("Opened file\n");
 	bzero(buffer, sizeof (buffer));
 	r = read(fd, buffer, MAX_BUFF);
-	deflate_stream(buffer, r);
+	if (deflate_stream(buffer, r) == -1)
+		printf("Error happen with no %d\n", errno);
 	close (fd);
 }

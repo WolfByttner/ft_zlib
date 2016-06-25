@@ -6,7 +6,7 @@
 /*   By: jbyttner <jbyttner@42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/06/11 12:59:23 by jbyttner          #+#    #+#             */
-/*   Updated: 2016/06/24 23:26:46 by jbyttner         ###   ########.fr       */
+/*   Updated: 2016/06/25 19:54:08 by jbyttner         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,6 +60,7 @@ static int	inflate_pair_static(t_zstreamp strm, t_ulong len)
 	strm->next_out += len;
 	strm->available_out -= len;
 	strm->total_read_out += len;
+	return (0);
 	// TODO: Add lz77 retrieval based on len and dst
 } 
 
@@ -89,8 +90,9 @@ static int	ft_inflate_static(t_zstreamp strm, int level)
 
 	//TODO need to have buffered encoding here
 
-	while (strm->available_in > 0)
+	while (1 /* always true // strm->available_in > 0 */)
 	{
+		printf("Looping\n");
 		bits = get_bits(7, strm);
 		if (24 <= bits && bits <= 95)
 			inflate_literal_static(strm, (bits << 1) + get_bits(1,strm), 8);
@@ -99,11 +101,16 @@ static int	ft_inflate_static(t_zstreamp strm, int level)
 		else if (100 <= bits && bits <= 127)
 			inflate_literal_static(strm, (bits << 2) + get_bits(2, strm), 9);
 		else if (0 == bits)
+		{
+			printf("Exiting %lu\n", bits);
 			return (0);
+		}
 		else
 			inflate_pair_static(strm, (bits << 1) + get_bits(1, strm));
 	printf(" <- %u literal\n", bits);
+		// TODO check for errors in strm here
 	}
+	printf ("Suspect exit\n");
 }
 
 int		ft_inflate(t_zstreamp strm, int level)
