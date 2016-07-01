@@ -6,12 +6,37 @@
 /*   By: jbyttner <jbyttner@42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/06/11 12:59:23 by jbyttner          #+#    #+#             */
-/*   Updated: 2016/06/25 19:54:08 by jbyttner         ###   ########.fr       */
+/*   Updated: 2016/07/01 17:57:19 by jbyttner         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_zlib_detail.h"
 #include <math.h>
+
+
+/*
+** TODO: Move reverse_nbits to different file
+*/
+
+t_ulong	reverse_nbits(t_ulong bits, t_uint n)
+{
+//	printf("Bits are %d\n", bits);
+	t_ulong		res;
+	t_ulong		tmp;
+	t_uint		i;
+
+	// TODO: Add error checks, n must be < 64 and >= 2
+	i = 0;
+	res = 0;
+	while (i < n)
+	{
+		tmp = (bits & (1 << i));
+		if (tmp)
+			res |= (1 << ((n - 1) - i));
+		i++;
+	}
+	return (res);
+}
 
 /*
 ** Naming scheme [algorithm]_["byte" type]_[huffman type]
@@ -37,24 +62,29 @@ static int	inflate_pair_static(t_zstreamp strm, t_ulong len)
 	const int	tabd[] = { 1, 5, 9, 17, 33, 65, 129, 257, 513, 1025, 2049, 4097, 8193, 16385 };
 
 	extra = (len == 285 - 256 ? 0 : (len > 8) * ((len - 5) / 4));
-	printf("%lu}%lu len extra\n", len, extra);
+	printf("[%lu len %lu extra ", len, extra);
 	if (len != 285 - 256)
-		len = tabl[extra] + (extra ? get_bits(extra, strm) : 0)
-			+ (len % 4) * extra + (len < 9 ? len - 1 : 0);
+		len = tabl[extra] + (extra ? reverse_nbits(get_bits(extra, strm), extra) : 0)
+			+ ((len - 1) % 4) * (1 << extra) + (!extra) * ((len - 1) / 4) * 4;
 			//(len > 264) * ((len - 261) / 4) * (len - tabl[extra]);
 	else
 		len = 258;
 	dst = get_bits(5, strm);
 	extra = (dst > 3) * ((dst - 2) / 2);
-	dst = tabd[extra] + (extra ? get_bits(extra, strm) : 0)
+	int	foo = extra ? reverse_nbits(get_bits(extra, strm), extra) : 0; // TODO remove temp
+	printf("%d bits ", foo);
+	printf("%d dst %d extra", dst, extra);
+	dst = tabd[extra] + /*(extra ? get_bits(extra, strm) : 0)*/ foo
 			+ (dst % 2) * (1 << extra) + (!extra) * (dst / 2) * 2;
-	printf("Length %lu - distance %lu\n", len, dst);
+	printf("Length %lu - distance %lu]", len, dst);
 	extra = 0;
 	while (extra < len && extra < strm->available_out)
 	{
 		strm->next_out[extra] = strm->next_out[-dst + (extra % dst)];
+		printf("%c", strm->next_out[extra]);
 		extra++;
 	}
+	printf("[]");
 	if (extra < len)
 		; // TODO error here
 	strm->next_out += len;
@@ -74,7 +104,7 @@ static int	inflate_pair_static(t_zstreamp strm, t_ulong len)
 static int	inflate_literal_static(t_zstreamp strm, t_ulong bits, int nbits)
 {
 	(*(strm->next_out++)) = (t_uchar)(bits - (nbits == 8 ? 48 : 400));
-	printf("%c <-- is", *(strm->next_out - 1));
+	printf("%c", *(strm->next_out - 1));
 	strm->available_out--;
 	strm->total_read_out++;
 }
@@ -92,7 +122,7 @@ static int	ft_inflate_static(t_zstreamp strm, int level)
 
 	while (1 /* always true // strm->available_in > 0 */)
 	{
-		printf("Looping\n");
+		//printf("Looping\n");
 		bits = get_bits(7, strm);
 		if (24 <= bits && bits <= 95)
 			inflate_literal_static(strm, (bits << 1) + get_bits(1,strm), 8);
@@ -107,10 +137,10 @@ static int	ft_inflate_static(t_zstreamp strm, int level)
 		}
 		else
 			inflate_pair_static(strm, (bits << 1) + get_bits(1, strm));
-	printf(" <- %u literal\n", bits);
+	//printf(" <- %u literal\n", bits);
 		// TODO check for errors in strm here
 	}
-	printf ("Suspect exit\n");
+	printf ("\nSuspect exit\n");
 }
 
 int		ft_inflate(t_zstreamp strm, int level)

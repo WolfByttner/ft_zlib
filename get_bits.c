@@ -6,7 +6,7 @@
 /*   By: jbyttner <jbyttner@42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/06/09 09:46:35 by jbyttner          #+#    #+#             */
-/*   Updated: 2016/06/25 12:05:25 by jbyttner         ###   ########.fr       */
+/*   Updated: 2016/07/01 00:38:08 by jbyttner         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,7 +48,7 @@ static inline int	strm_fill_bitbuff(t_zstream *strm)
 	while (i++ < end)
 	{
 		strm->bitbuff <<= CHAR_BIT;
-		strm->bitbuff += reverse_bits(strm->next_in[i - 1]);
+		strm->bitbuff |= reverse_bits(strm->next_in[i - 1]);
 		strm->bitcnt += CHAR_BIT;
 		strm->available_in--;
 	}
@@ -81,17 +81,17 @@ t_ulong				get_bits(t_uint num, t_zstream *strm)
 	{
 		if (num > strm->bitcnt)
 		{
-			storage = ((1L << strm->bitcnt) - 1) & (strm->bitbuff
+			storage |= ((1L << strm->bitcnt) - 1) & (strm->bitbuff
 					>> (ULONG_BIT - strm->bitcnt)); 
 			num -= strm->bitcnt;
 			storage <<= num;
 			if (strm_fill_bitbuff(strm) == -1 || num == 0)
 				return (storage);
 		}
-		storage += ((1L << num) - 1) & (strm->bitbuff >> (ULONG_BIT - num));
+		storage |= ((1L << num) - 1) & (strm->bitbuff >> (ULONG_BIT - num));
 		strm->bitbuff <<= num;
 		strm->bitcnt -= num;
 	}
-	printf("Returning %lu\n", storage);
+	//printf("Returning %lu\n", storage);
 	return (storage);
 }
